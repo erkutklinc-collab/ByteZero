@@ -1,62 +1,131 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useMsal, useIsAuthenticated } from '@azure/msal-react'
+import { loginRequest } from './authConfig'
+import { scanMailbox } from './graphService'
+import type { MailboxScanResult } from './graphService'
 
 function App() {
+  const { instance } = useMsal()
+  const isAuthenticated = useIsAuthenticated()
   const [status, setStatus] = useState<string>('Not connected')
-  const [emailInfo, setEmailInfo] = useState<{subject?: string, sender?: string} | null>(null)
-
-  useEffect(() => {
-    // If we're inside the Outlook Context, we can preemptively grab the current item
-    if (typeof Office !== 'undefined' && Office.context && Office.context.mailbox) {
-      const item = Office.context.mailbox.item
-      if (item) {
-        setEmailInfo({
-          subject: item.subject,
-          sender: item.sender?.emailAddress
-        })
-      }
-    }
-  }, [])
+  const [scanning, setScanning] = useState(false)
+  const [result, setResult] = useState<MailboxScanResult | null>(null)
 
   const handleLogin = async () => {
-    setStatus('Connecting to Microsoft Graph...')
     try {
-      // Placeholder for MSAL initialization:
-      // When tracking the full mailbox footprint, MSAL will be used to 
-      // authorize and query the Microsoft Graph API (/me/messages)
-      setStatus('Waiting for Microsoft Authentication setup with an Azure AD App Registration.')
+      setStatus('Opening Microsoft login...')
+      await instance.loginPopup(loginRequest)
+      setStatus('Authenticated! Ready to scan your mailbox.')
     } catch (error) {
-      setStatus(`Error: ${error}`)
+      setStatus(`Login failed: ${error}`)
     }
   }
 
-  const handleScanCurrent = () => {
-    if (emailInfo) {
-      setStatus(`Scanned current email: "${emailInfo.subject}" from ${emailInfo.sender}.`)
-    } else {
-      setStatus('No email is currently selected or Office context not available.')
+  const handleLogout = async () => {
+    await instance.logoutPopup()
+    setResult(null)
+    setStatus('Not connected')
+  }
+
+  const handleScan = async () => {
+    setScanning(true)
+    setResult(null)
+    setStatus('Scanning mailbox...')
+
+    try {
+      const scanResult = await scanMailbox(instance, (count) => {
+        setStatus(`Scanning... ${count} emails fetched`)
+      }, 500)
+
+      setResult(scanResult)
+      setStatus(`Scan complete — ${scanResult.totalEmails} emails analyzed.`)
+    } catch (error) {
+      setStatus(`Scan failed: ${error}`)
+    } finally {
+      setScanning(false)
     }
   }
 
   return (
     <div className="App">
       <div className="brand-title">ByteFootprint</div>
-      
+
+      {/* Auth panel */}
       <div className="glass-panel">
-        <h2 style={{ fontSize: '20px', margin: '0 0 12px 0', color: '#fff', fontWeight: 600 }}>Outlook Connector</h2>
-        <p style={{ fontSize: '15px', color: '#94a3b8', margin: '0 0 16px 0', lineHeight: '1.5' }}>
-          Connect your Microsoft account to securely scan your mailbox for its digital carbon footprint.
-        </p>
+        <h2 className="panel-heading">Outlook Connector</h2>
 
-        <button className="primary-btn" onClick={handleLogin}>
-          Authenticate with Microsoft
-        </button>
-
-        <button className="primary-btn" onClick={handleScanCurrent} style={{background: 'var(--color-surface)', border: '1px solid var(--color-brand-500)', marginTop: '12px'}}>
-          Scan Current Email
-        </button>
+        {!isAuthenticated ? (
+          <>
+            <p className="panel-description">
+              Connect your Microsoft account to securely scan your entire mailbox for its digital carbon footprint.
+            </p>
+            <button className="primary-btn" onClick={handleLogin}>
+              Authenticate with Microsoft
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="panel-description" style={{ color: '#6ee7b7' }}>
+              ✓ Authenticated
+            </p>
+            <button
+              className="primary-btn"
+              onClick={handleScan}
+              disabled={scanning}
+            >
+              {scanning ? 'Scanning...' : 'Scan Mailbox'}
+            </button>
+            <button
+              className="secondary-btn"
+              onClick={handleLogout}
+            >
+              Sign Out
+            </button>
+          </>
+        )}
 
         <p className="status-text">{status}</p>
       </div>
+
+      {/* Results panel */}
+      {result && (
+        <div className="glass-panel" style={{ marginTop: '16px' }}>
+          <h2 className="panel-heading">Scan Results</h2>
+
+          <div className="stats-grid">
+            <div className="stat-card">
+              <span className="stat-value">{result.totalEmails}</span>
+              <span className="stat-label">Emails Scanned</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-value">{result.totalSizeMB}</span>
+              <span className="stat-label">Est. Size (MB)</span>
+            </div>
+            <div className="stat-card highlight">
+              <span className="stat-value">{result.estimatedCO2grams}</span>
+              <span className="stat-label">CO₂ (grams)</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-value">{result.withAttachments}</span>
+              <span className="stat-label">With Attachments</span>
+            </div>
+          </div>
+
+          {result.topSenders.length > 0 && (
+            <>
+              <h3 className="section-heading">Top Senders</h3>
+              <ul className="sender-list">
+                {result.topSenders.slice(0, 5).map((s, i) => (
+                  <li key={i} className="sender-item">
+                    <span className="sender-address">{s.address}</span>
+                    <span className="sender-count">{s.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
