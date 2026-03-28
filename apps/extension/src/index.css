@@ -1,0 +1,76 @@
+:root {
+  --background: #040806;
+  --foreground: #f8fafc;
+  --color-brand-500: #10b981;
+  --color-surface: rgba(6, 78, 59, 0.15);
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  margin: 0;
+  width: 380px;
+  height: auto;
+  min-height: 480px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.brand-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  text-align: center;
+  background: linear-gradient(to right, #6ee7b7, #10b981);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-panel {
+  background: var(--color-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+}
+
+.primary-btn {
+  background: var(--color-brand-500);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 24px;
+  width: 100%;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.primary-btn:hover {
+  opacity: 0.9;
+}
+
+.primary-btn:active {
+  transform: translateY(1px);
+}
+
+.status-text {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 16px;
+}
