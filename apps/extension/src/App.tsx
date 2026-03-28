@@ -7,36 +7,55 @@ function App() {
   const [scanning, setScanning] = useState(false)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [result, setResult] = useState<MailboxScanResult | null>(null)
-
-  const handleLogin = async () => {
+  const handleLogin = () => {
     setStatus('Opening Microsoft login...')
 
-    try {
-      const { PublicClientApplication } = await import('@azure/msal-browser')
-      const { msalConfig } = await import('./authConfig')
-      
-      const msalInstance = new PublicClientApplication(msalConfig)
-      await msalInstance.initialize()
+    // Use Office Dialog API — the ONLY reliable cross-iframe channel in Outlook Add-ins
+    Office.context.ui.displayDialogAsync(
+      window.location.origin + '/auth-end.html',
+      { height: 60, width: 40 },
+      (asyncResult) => {
+        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+          setStatus(`Dialog failed: ${asyncResult.error.message}`)
+          return
+        }
 
-      const loginResponse = await msalInstance.loginPopup({
-        scopes: ['Mail.Read'],
-        prompt: 'select_account'
-      })
+        const dialog = asyncResult.value
 
-      if (loginResponse && loginResponse.accessToken) {
-        setAccessToken(loginResponse.accessToken)
-        setStatus('Authenticated! Ready to scan your mailbox.')
-      } else {
-        setStatus('Login failed: No access token received.')
+        // Listen for the token message from auth-end.html via messageParent()
+        dialog.addEventHandler(
+          Office.EventType.DialogMessageReceived,
+          (arg: { message?: string; error?: number }) => {
+            dialog.close()
+            if (arg.message) {
+              try {
+                const data = JSON.parse(arg.message)
+                if (data.status === 'success' && data.token) {
+                  setAccessToken(data.token)
+                  setStatus('Authenticated! Ready to scan your mailbox.')
+                } else {
+                  setStatus(`Login failed: ${data.error || 'Unknown error'}`)
+                }
+              } catch {
+                setStatus('Login failed: Could not parse response.')
+              }
+            }
+          }
+        )
+
+        // Handle dialog being closed by user
+        dialog.addEventHandler(
+          Office.EventType.DialogEventReceived,
+          (arg: any) => {
+            setStatus((prev) => {
+              if (prev.includes('Authenticated')) return prev
+              if (arg.error === 12006) return 'Login dialog was closed.'
+              return `Dialog error: ${arg.error}`
+            })
+          }
+        )
       }
-    } catch (err: any) {
-      // If the user closes the native popup themselves, it throws "user_cancelled"
-      if (err.message && err.message.includes('user_cancelled')) {
-        setStatus('Login was canceled by you.')
-      } else {
-        setStatus(`Native login failed: ${err.message || err.toString()}`)
-      }
-    }
+    )
   }
 
   const handleLogout = () => {
