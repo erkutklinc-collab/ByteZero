@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Authenticating...</title>
+  </head>
+  <body>
+    <p>Completing authentication...</p>
+    <!-- MSAL automatically detects it is inside a popup and will postMessage the token back to the main window -->
+    <script type="module">
+      import { PublicClientApplication } from 'https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.5.0/+esm'
+      
+      const msalInstance = new PublicClientApplication({
+        auth: {
+           clientId: 'PLACEHOLDER - MSAL handles this internally'
+        }
+      })
+      msalInstance.initialize().then(() => {
+        msalInstance.handleRedirectPromise()
+      })
+    </script>
+  </body>
+</html>

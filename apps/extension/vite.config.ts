@@ -18,12 +18,17 @@ export default defineConfig(async () => {
     plugins: [react()],
     server: {
       port: 3000,
-      https: httpsOptions
+      https: httpsOptions,
+      headers: {
+        'Cross-Origin-Opener-Policy': 'unsafe-none',
+        'Cross-Origin-Embedder-Policy': 'unsafe-none',
+      }
     },
     build: {
       rollupOptions: {
         input: {
           taskpane: 'index.html',
+          redirect: 'redirect.html',
         },
         output: {
           entryFileNames: '[name].js',
