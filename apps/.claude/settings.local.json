@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find c:UsersGavrilDesktophackatonByteZeroappsdashboard -type d ! -path */node_modules*)",
+      "Bash(npx ts-node:*)"
+    ]
+  }
+}
