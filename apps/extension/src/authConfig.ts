@@ -12,7 +12,7 @@ import type { Configuration, PopupRequest } from '@azure/msal-browser'
 //   6. Copy the "Application (client) ID" and paste it below
 //   7. Go to "API permissions" → "Add a permission" → "Microsoft Graph" → "Delegated" → add "Mail.Read"
 // ============================================================
-const CLIENT_ID = '13d8d636-6859-4beb-b218-7fcd8f0fce54'
+const CLIENT_ID = import.meta.env.VITE_AZURE_CLIENT_ID
 
 export const msalConfig: Configuration = {
   auth: {
