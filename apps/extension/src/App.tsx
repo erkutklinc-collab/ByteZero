@@ -8,35 +8,47 @@ function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [result, setResult] = useState<MailboxScanResult | null>(null)
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     setStatus('Opening Microsoft login...')
 
-    try {
-      const { PublicClientApplication } = await import('@azure/msal-browser')
-      const { msalConfig } = await import('./authConfig')
-      
-      const msalInstance = new PublicClientApplication(msalConfig)
-      await msalInstance.initialize()
+    const dialogUrl = `${window.location.origin}/redirect.html`
 
-      const loginResponse = await msalInstance.loginPopup({
-        scopes: ['Mail.Read'],
-        prompt: 'select_account'
-      })
+    Office.context.ui.displayDialogAsync(
+      dialogUrl,
+      { height: 60, width: 30, promptBeforeOpen: false },
+      (asyncResult) => {
+        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+          setStatus(`Could not open login dialog: ${asyncResult.error.message}`)
+          return
+        }
 
-      if (loginResponse && loginResponse.accessToken) {
-        setAccessToken(loginResponse.accessToken)
-        setStatus('Authenticated! Ready to scan your mailbox.')
-      } else {
-        setStatus('Login failed: No access token received.')
+        const dialog = asyncResult.value
+
+        dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg: any) => {
+          dialog.close()
+          try {
+            const message = JSON.parse(arg.message)
+            if (message.status === 'success' && message.token) {
+              setAccessToken(message.token)
+              setStatus('Authenticated! Ready to scan your mailbox.')
+            } else {
+              setStatus(`Login failed: ${message.error || 'Unknown error'}`)
+            }
+          } catch {
+            setStatus('Login failed: Could not parse auth response.')
+          }
+        })
+
+        dialog.addEventHandler(Office.EventType.DialogEventReceived, (arg: any) => {
+          // 12006 = dialog closed by user
+          if (arg.error === 12006) {
+            setStatus('Login was canceled.')
+          } else {
+            setStatus(`Login dialog error: ${arg.error}`)
+          }
+        })
       }
-    } catch (err: any) {
-      // If the user closes the native popup themselves, it throws "user_cancelled"
-      if (err.message && err.message.includes('user_cancelled')) {
-        setStatus('Login was canceled by you.')
-      } else {
-        setStatus(`Native login failed: ${err.message || err.toString()}`)
-      }
-    }
+    )
   }
 
   const handleLogout = () => {
