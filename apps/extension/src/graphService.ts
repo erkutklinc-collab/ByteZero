@@ -1,6 +1,3 @@
-import type { IPublicClientApplication } from '@azure/msal-browser'
-import { loginRequest } from './authConfig'
-
 const GRAPH_ENDPOINT = 'https://graph.microsoft.com/v1.0'
 
 export interface MailMessage {
@@ -14,9 +11,7 @@ export interface MailMessage {
   }
   receivedDateTime: string
   hasAttachments: boolean
-  // internetMessageHeaders can contain size info
   bodyPreview?: string
-  // Estimated size in bytes (from Graph API)
   size?: number
 }
 
@@ -31,25 +26,12 @@ export interface MailboxScanResult {
 }
 
 /**
- * Acquire a token silently (or fall back to popup) and call Graph API
+ * Call the Graph API with the given access token
  */
-async function callGraph(msalInstance: IPublicClientApplication, endpoint: string) {
-  const accounts = msalInstance.getAllAccounts()
-  if (accounts.length === 0) throw new Error('No accounts found. Please sign in first.')
-
-  let tokenResponse
-  try {
-    tokenResponse = await msalInstance.acquireTokenSilent({
-      ...loginRequest,
-      account: accounts[0],
-    })
-  } catch {
-    tokenResponse = await msalInstance.acquireTokenPopup(loginRequest)
-  }
-
+async function callGraph(accessToken: string, endpoint: string) {
   const response = await fetch(endpoint, {
     headers: {
-      Authorization: `Bearer ${tokenResponse.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
   })
 
@@ -64,17 +46,16 @@ async function callGraph(msalInstance: IPublicClientApplication, endpoint: strin
  * Fetch messages in batches using Graph API pagination
  */
 export async function scanMailbox(
-  msalInstance: IPublicClientApplication,
+  accessToken: string,
   onProgress?: (fetched: number) => void,
   maxEmails: number = 500
 ): Promise<MailboxScanResult> {
   const allMessages: MailMessage[] = []
-  // Request top fields we need, fetch in pages of 100
   let nextLink: string | null =
     `${GRAPH_ENDPOINT}/me/messages?$top=100&$select=id,subject,from,receivedDateTime,hasAttachments,bodyPreview&$orderby=receivedDateTime desc`
 
   while (nextLink && allMessages.length < maxEmails) {
-    const data = await callGraph(msalInstance, nextLink)
+    const data = await callGraph(accessToken, nextLink)
     const messages: MailMessage[] = data.value || []
     allMessages.push(...messages)
 
@@ -93,23 +74,20 @@ export async function scanMailbox(
     senderMap.set(senderAddr, (senderMap.get(senderAddr) || 0) + 1)
   }
 
-  // Sort senders by frequency
   const topSenders = Array.from(senderMap.entries())
     .map(([address, count]) => ({ address, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
 
-  // Estimate email sizes (Graph doesn't always return size in list queries)
-  // Average email: ~75KB without attachment, ~300KB with attachment
-  const AVG_SIZE_NO_ATTACHMENT = 75 * 1024    // 75 KB
-  const AVG_SIZE_WITH_ATTACHMENT = 300 * 1024  // 300 KB
+  // Estimate sizes
+  const AVG_SIZE_NO_ATTACHMENT = 75 * 1024
+  const AVG_SIZE_WITH_ATTACHMENT = 300 * 1024
   const totalSizeBytes =
     (allMessages.length - withAttachments) * AVG_SIZE_NO_ATTACHMENT +
     withAttachments * AVG_SIZE_WITH_ATTACHMENT
   const totalSizeMB = totalSizeBytes / (1024 * 1024)
 
-  // CO2 estimate: ~0.3g CO2 per email stored (industry average)
-  // Emails with attachments: ~4g CO2
+  // CO2 estimate: ~0.3g per email, ~4g with attachments
   const estimatedCO2grams =
     (allMessages.length - withAttachments) * 0.3 + withAttachments * 4
 

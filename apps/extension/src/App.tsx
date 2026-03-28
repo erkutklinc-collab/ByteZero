@@ -1,39 +1,71 @@
 import { useState } from 'react'
-import { useMsal, useIsAuthenticated } from '@azure/msal-react'
-import { loginRequest } from './authConfig'
 import { scanMailbox } from './graphService'
 import type { MailboxScanResult } from './graphService'
 
 function App() {
-  const { instance } = useMsal()
-  const isAuthenticated = useIsAuthenticated()
   const [status, setStatus] = useState<string>('Not connected')
   const [scanning, setScanning] = useState(false)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [result, setResult] = useState<MailboxScanResult | null>(null)
 
-  const handleLogin = async () => {
-    try {
-      setStatus('Opening Microsoft login...')
-      await instance.loginPopup(loginRequest)
-      setStatus('Authenticated! Ready to scan your mailbox.')
-    } catch (error) {
-      setStatus(`Login failed: ${error}`)
-    }
+  const handleLogin = () => {
+    setStatus('Opening Microsoft login...')
+
+    // Use Office Dialog API to open login page in a separate window
+    Office.context.ui.displayDialogAsync(
+      window.location.origin + '/redirect.html',
+      { height: 60, width: 30 },
+      (asyncResult) => {
+        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+          setStatus(`Login dialog failed: ${asyncResult.error.message}`)
+          return
+        }
+
+        const dialog = asyncResult.value
+        dialog.addEventHandler(
+          Office.EventType.DialogMessageReceived,
+          (arg: { message?: string; error?: number }) => {
+            dialog.close()
+            if (arg.message) {
+              try {
+                const data = JSON.parse(arg.message)
+                if (data.status === 'success' && data.token) {
+                  setAccessToken(data.token)
+                  setStatus('Authenticated! Ready to scan your mailbox.')
+                } else {
+                  setStatus(`Login failed: ${data.error || 'Unknown error'}`)
+                }
+              } catch {
+                setStatus('Login failed: Could not parse response.')
+              }
+            }
+          }
+        )
+
+        dialog.addEventHandler(
+          Office.EventType.DialogEventReceived,
+          () => {
+            setStatus('Login dialog was closed.')
+          }
+        )
+      }
+    )
   }
 
-  const handleLogout = async () => {
-    await instance.logoutPopup()
+  const handleLogout = () => {
+    setAccessToken(null)
     setResult(null)
     setStatus('Not connected')
   }
 
   const handleScan = async () => {
+    if (!accessToken) return
     setScanning(true)
     setResult(null)
     setStatus('Scanning mailbox...')
 
     try {
-      const scanResult = await scanMailbox(instance, (count) => {
+      const scanResult = await scanMailbox(accessToken, (count) => {
         setStatus(`Scanning... ${count} emails fetched`)
       }, 500)
 
@@ -50,11 +82,10 @@ function App() {
     <div className="App">
       <div className="brand-title">ByteFootprint</div>
 
-      {/* Auth panel */}
       <div className="glass-panel">
         <h2 className="panel-heading">Outlook Connector</h2>
 
-        {!isAuthenticated ? (
+        {!accessToken ? (
           <>
             <p className="panel-description">
               Connect your Microsoft account to securely scan your entire mailbox for its digital carbon footprint.
@@ -87,7 +118,6 @@ function App() {
         <p className="status-text">{status}</p>
       </div>
 
-      {/* Results panel */}
       {result && (
         <div className="glass-panel" style={{ marginTop: '16px' }}>
           <h2 className="panel-heading">Scan Results</h2>
