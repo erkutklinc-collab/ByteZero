@@ -1,4 +1,5 @@
 import { Leaf, Users, Target, ArrowUpRight, ArrowDownRight, Trophy, Clock } from "lucide-react";
+import { FitItems } from "./FitItems";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
 
@@ -45,7 +46,7 @@ export default async function Home() {
   const [overview, leaderboard, recentEvents] = await Promise.all([
     fetch(`${API_URL}/api/metrics/overview`, { cache: "no-store" }).then(r => r.json()) as Promise<Overview>,
     fetch(`${API_URL}/api/metrics/leaderboard`, { cache: "no-store" }).then(r => r.json()) as Promise<LeaderboardEntry[]>,
-    fetch(`${API_URL}/api/events/recent?limit=5`, { cache: "no-store" }).then(r => r.json()) as Promise<RecentEvent[]>,
+    fetch(`${API_URL}/api/events/recent?limit=15`, { cache: "no-store" }).then(r => r.json()) as Promise<RecentEvent[]>,
   ]);
 
   return (
@@ -75,7 +76,7 @@ export default async function Home() {
       </div>
 
       {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:grid-rows-[auto]">
         {/* Leaderboard */}
         <div className="lg:col-span-2 glass-panel p-6">
           <div className="flex items-center justify-between mb-6">
@@ -96,12 +97,12 @@ export default async function Home() {
         </div>
 
         {/* Recent Activity */}
-        <div className="glass-panel p-6">
+        <div className="glass-panel p-6 flex flex-col overflow-hidden max-h-0 min-h-full">
           <h2 className="text-xl font-medium mb-6 text-white flex items-center gap-2">
             <Clock className="w-5 h-5 text-slate-400" />
             Recent Impact
           </h2>
-          <div className="space-y-6">
+          <FitItems className="space-y-6 overflow-hidden flex-1 pl-1">
             {recentEvents.map((event) => (
               <ActivityItem
                 key={event.id}
@@ -113,7 +114,7 @@ export default async function Home() {
             {recentEvents.length === 0 && (
               <p className="text-slate-500 text-sm">No activity yet.</p>
             )}
-          </div>
+          </FitItems>
         </div>
       </div>
     </div>
