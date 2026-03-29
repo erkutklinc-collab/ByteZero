@@ -70,7 +70,12 @@ function App() {
     playSuccessSound()
 
     // Map task type to backend event type
-    const eventType = type === 'DELETE' ? 'email_deleted' : 'unsubscribe_action'
+    const eventTypeMap: Record<string, string> = {
+      'DELETE': 'email_deleted',
+      'REMOVE_ATTACHMENT': 'attachment_removed',
+      'CLEAR_CACHE': 'cache_cleared'
+    }
+    const eventType = eventTypeMap[type] || 'email_deleted'
 
     // Report to backend
     try {

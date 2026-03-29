@@ -16,7 +16,7 @@ export interface MailMessage {
 
 export interface ActionableTask {
   id: string
-  type: 'DELETE' | 'UNSUBSCRIBE'
+  type: 'DELETE' | 'REMOVE_ATTACHMENT' | 'CLEAR_CACHE'
   title: string
   description: string
   impactCO2grams: number
@@ -77,42 +77,39 @@ export async function scanMailbox(
   const tasks: ActionableTask[] = [
     {
       id: 'task-1',
-      type: 'UNSUBSCRIBE',
-      title: 'Unsubscribe from TechCrunch',
-      description: 'You have received 42 notifications this month. Unsubscribe to save energy on constant fetching.',
-      impactCO2grams: 12.6, // 42 * 0.3
-      targetSender: 'newsletters@techcrunch.com'
+      type: 'CLEAR_CACHE',
+      title: 'Clear Local Email Cache',
+      description: 'You have 120MB of local data that can be cleared to save energy and local storage.',
+      impactCO2grams: 24.0,
     },
     {
       id: 'task-2',
       type: 'DELETE',
       title: 'Delete Old Amazon Notifications',
       description: 'Clear 28 emails from no-reply@amazon.com that are over 6 months old.',
-      impactCO2grams: 8.4, // 28 * 0.3
+      impactCO2grams: 8.4,
       targetSender: 'no-reply@amazon.com'
     },
     {
       id: 'task-3',
-      type: 'UNSUBSCRIBE',
-      title: 'Unsubscribe from LinkedIn Marketing',
-      description: 'You have received 18 marketing emails. Unsubscribe to reduce future delivery emissions.',
-      impactCO2grams: 5.4,
-      targetSender: 'marketing@linkedin.com'
+      type: 'REMOVE_ATTACHMENT',
+      title: 'Remove Large PDF Attachments',
+      description: 'You have 8 old slide decks (over 10MB each) that are taking up significant storage space.',
+      impactCO2grams: 32.0,
     },
     {
       id: 'task-4',
       type: 'DELETE',
       title: 'Clear Jira Activity Logs',
-      description: 'You have 15 Jira notifications. These are often redundant once the task is closed.',
+      description: 'Move 15 inactive project threads to deletion to declutter your inbox.',
       impactCO2grams: 4.5,
-      targetSender: 'jira@company.atlassian.net'
     },
     {
       id: 'task-5',
-      type: 'DELETE',
-      title: 'Delete Large Attachments (Old)',
+      type: 'REMOVE_ATTACHMENT',
+      title: 'Cleanup Legacy High-Impact Attachments',
       description: 'Cleanup identified 12 high-impact legacy emails with attachments.',
-      impactCO2grams: 48.0, // 12 * 4.0
+      impactCO2grams: 48.0,
     }
   ]
 
