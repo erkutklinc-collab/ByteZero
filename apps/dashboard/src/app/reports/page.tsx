@@ -53,7 +53,7 @@ export default async function ReportsPage() {
             Environmental impact summary and projections for your organization.
           </p>
         </div>
-        <ExportCSV data={report} />
+        <ExportCSV />
       </header>
 
       {/* ESG Summary */}
