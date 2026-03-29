@@ -36,6 +36,7 @@ npx next dev --hostname 127.0.0.1
 ```
 
 ### Accessing the Components:
+- **Temporary ngrok link to Dashboard instance**: https://driving-toad-ethical.ngrok-free.app/
 - **Outlook Extension**: [https://localhost:3000](https://localhost:3000)
 - **Organization Dashboard**: [http://localhost:3002](http://localhost:3002)
 - **Backend API**: [http://localhost:3001/api/metrics/overview](http://localhost:3001/api/metrics/overview)
