@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Department, User, CarbonEvent } from './entities';
 import { EventsModule } from './events/events.module';
 import { MetricsModule } from './metrics/metrics.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MetricsModule } from './metrics/metrics.module';
     }),
     EventsModule,
     MetricsModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
