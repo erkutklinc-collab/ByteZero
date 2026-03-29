@@ -18,6 +18,7 @@ const CO2_FACTORS: Record<string, (meta?: Record<string, any>) => number> = {
     const sizeBytes = meta?.sizeBytes ?? 10_000_000;
     return (sizeBytes / 1_000_000) * 0.2; // 0.2g per MB
   },
+  unsubscribe_action: () => 2.5, // flat 2.5g per unsubscribe (prevents future emails)
   mailbox_scanned: () => 0, // awareness action, no direct savings
 };
 
