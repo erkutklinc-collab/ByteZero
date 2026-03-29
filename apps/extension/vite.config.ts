@@ -28,7 +28,6 @@ export default defineConfig(async () => {
       rollupOptions: {
         input: {
           taskpane: 'index.html',
-          authEnd: 'auth-end.html',
         },
         output: {
           entryFileNames: '[name].js',

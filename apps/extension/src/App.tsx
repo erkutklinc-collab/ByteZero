@@ -2,78 +2,52 @@ import { useState } from 'react'
 import { scanMailbox } from './graphService'
 import type { MailboxScanResult } from './graphService'
 
+// Native AudioContext synthesizer for a clean "chime" sound
+const playSuccessSound = () => {
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const oscillator = audioCtx.createOscillator()
+    const gainNode = audioCtx.createGain()
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime) // D5
+    oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1) // A5
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime)
+    gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5)
+
+    oscillator.connect(gainNode)
+    gainNode.connect(audioCtx.destination)
+
+    oscillator.start()
+    oscillator.stop(audioCtx.currentTime + 0.5)
+  } catch (e) {
+    console.error('AudioContext failed:', e)
+  }
+}
+
 function App() {
   const [status, setStatus] = useState<string>('Not connected')
   const [scanning, setScanning] = useState(false)
-  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [result, setResult] = useState<MailboxScanResult | null>(null)
-  const handleLogin = () => {
-    setStatus('Opening Microsoft login...')
-
-    // Use Office Dialog API — the ONLY reliable cross-iframe channel in Outlook Add-ins
-    Office.context.ui.displayDialogAsync(
-      window.location.origin + '/auth-end.html',
-      { height: 60, width: 40 },
-      (asyncResult) => {
-        if (asyncResult.status === Office.AsyncResultStatus.Failed) {
-          setStatus(`Dialog failed: ${asyncResult.error.message}`)
-          return
-        }
-
-        const dialog = asyncResult.value
-
-        // Listen for the token message from auth-end.html via messageParent()
-        dialog.addEventHandler(
-          Office.EventType.DialogMessageReceived,
-          (arg: { message?: string; error?: number }) => {
-            dialog.close()
-            if (arg.message) {
-              try {
-                const data = JSON.parse(arg.message)
-                if (data.status === 'success' && data.token) {
-                  setAccessToken(data.token)
-                  setStatus('Authenticated! Ready to scan your mailbox.')
-                } else {
-                  setStatus(`Login failed: ${data.error || 'Unknown error'}`)
-                }
-              } catch {
-                setStatus('Login failed: Could not parse response.')
-              }
-            }
-          }
-        )
-
-        // Handle dialog being closed by user
-        dialog.addEventHandler(
-          Office.EventType.DialogEventReceived,
-          (arg: any) => {
-            setStatus((prev) => {
-              if (prev.includes('Authenticated')) return prev
-              if (arg.error === 12006) return 'Login dialog was closed.'
-              return `Dialog error: ${arg.error}`
-            })
-          }
-        )
-      }
-    )
-  }
-
-  const handleLogout = () => {
-    setAccessToken(null)
-    setResult(null)
-    setStatus('Not connected')
-  }
+  const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set())
+  
+  // Gamification state
+  const [xp, setXp] = useState(30)
+  const [level, setLevel] = useState(1)
+  const [showLevelUp, setShowLevelUp] = useState(false)
 
   const handleScan = async () => {
-    if (!accessToken) return
     setScanning(true)
     setResult(null)
+    setCompletedTaskIds(new Set())
     setStatus('Scanning mailbox...')
 
     try {
-      const scanResult = await scanMailbox(accessToken, (count) => {
+      const scanResult = await scanMailbox((count) => {
         setStatus(`Scanning... ${count} emails fetched`)
-      }, 500)
+      })
 
       setResult(scanResult)
       setStatus(`Scan complete — ${scanResult.totalEmails} emails analyzed.`)
@@ -84,83 +58,181 @@ function App() {
     }
   }
 
+  const handleRunTask = (taskId: string, impactCO2: number) => {
+    setCompletedTaskIds(prev => new Set(prev).add(taskId))
+    setStatus(`Task completed! Saved ${impactCO2}g of CO2 emissions.`)
+    
+    // Play sound
+    playSuccessSound()
+
+    // Update XP and Level
+    setXp(prevXp => {
+      const newXp = prevXp + 40
+      if (newXp >= 100) {
+        setLevel(prevLevel => prevLevel + 1)
+        setShowLevelUp(true)
+        setTimeout(() => setShowLevelUp(false), 3000)
+        return newXp - 100
+      }
+      return newXp
+    })
+    
+    // Auto-clear status after 3 seconds
+    setTimeout(() => {
+      setStatus(prev => prev.includes('Saved') ? 'Ready for more optimizations.' : prev)
+    }, 3000)
+  }
+
+  // Find the next task to display (the stack logic)
+  const nextTask = result?.tasks.find(t => !completedTaskIds.has(t.id))
+  const completedCount = completedTaskIds.size
+  const totalTasks = result?.tasks.length || 0
+
+  // Calculate adjusted results based on completed tasks
+  const getAdjustedResults = () => {
+    if (!result) return null
+    
+    let totalEmails = result.totalEmails
+    let totalCO2 = result.estimatedCO2grams
+    
+    result.tasks.forEach(task => {
+      if (completedTaskIds.has(task.id)) {
+        totalCO2 -= task.impactCO2grams
+        // For mock simplicity, we assume DELETE tasks identify specific email counts
+        if (task.type === 'DELETE') {
+          if (task.id === 'task-2') totalEmails -= 28
+          if (task.id === 'task-4') totalEmails -= 15
+          if (task.id === 'task-5') totalEmails -= 12
+        }
+      }
+    })
+    
+    return {
+      ...result,
+      totalEmails: Math.max(0, totalEmails),
+      estimatedCO2grams: Math.round(Math.max(0, totalCO2) * 100) / 100
+    }
+  }
+
+  const adjustedResult = getAdjustedResults()
+
   return (
     <div className="App">
-      <div className="brand-title">ByteFootprint</div>
+      <div className="logo-container">
+        <img src="/logo.png" alt="ByteZero Logo" className="brand-logo" />
+      </div>
 
-      <div className="glass-panel">
+      {/* Level Bar (Always Visible) */}
+      <div className="glass-panel level-container">
+        <div className="level-header">
+          <span className="level-label">Level {level}</span>
+          <span className="xp-label">{xp}/100 XP</span>
+        </div>
+        <div className="level-bar-bg">
+          <div className="level-bar-fill" style={{ width: `${xp}%` }}></div>
+        </div>
+      </div>
+
+      {showLevelUp && (
+        <div className="level-up-toast">
+          <span className="toast-icon">✨</span>
+          <div className="toast-content">
+            <span className="toast-title">Level Up!</span>
+            <span className="toast-desc">You've reached Level {level}!</span>
+          </div>
+        </div>
+      )}
+
+      <div className="glass-panel" style={{ marginTop: '16px' }}>
         <h2 className="panel-heading">Outlook Connector</h2>
 
-        {!accessToken ? (
-          <>
-            <p className="panel-description">
-              Connect your Microsoft account to securely scan your entire mailbox for its digital carbon footprint.
-            </p>
-            <button className="primary-btn" onClick={handleLogin}>
-              Authenticate with Microsoft
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="panel-description" style={{ color: '#6ee7b7' }}>
-              ✓ Authenticated
-            </p>
-            <button
-              className="primary-btn"
-              onClick={handleScan}
-              disabled={scanning}
-            >
-              {scanning ? 'Scanning...' : 'Scan Mailbox'}
-            </button>
-            <button
-              className="secondary-btn"
-              onClick={handleLogout}
-            >
-              Sign Out
-            </button>
-          </>
-        )}
+        <p className="panel-description">
+          Analyze your mailbox to securely calculate its digital carbon footprint and environmental impact.
+        </p>
+        
+        <button
+          className="primary-btn"
+          onClick={handleScan}
+          disabled={scanning}
+        >
+          {scanning ? 'Scanning...' : 'Scan Mailbox'}
+        </button>
 
         <p className="status-text">{status}</p>
       </div>
 
-      {result && (
-        <div className="glass-panel" style={{ marginTop: '16px' }}>
-          <h2 className="panel-heading">Scan Results</h2>
+      {adjustedResult && (
+        <>
+          <div className="glass-panel" style={{ marginTop: '16px' }}>
+            <h2 className="panel-heading">Scan Results</h2>
 
-          <div className="stats-grid">
-            <div className="stat-card">
-              <span className="stat-value">{result.totalEmails}</span>
-              <span className="stat-label">Emails Scanned</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">{result.totalSizeMB}</span>
-              <span className="stat-label">Est. Size (MB)</span>
-            </div>
-            <div className="stat-card highlight">
-              <span className="stat-value">{result.estimatedCO2grams}</span>
-              <span className="stat-label">CO₂ (grams)</span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-value">{result.withAttachments}</span>
-              <span className="stat-label">With Attachments</span>
+            <div className="stats-grid">
+              <div className="stat-card">
+                <span className="stat-value">{adjustedResult.totalEmails}</span>
+                <span className="stat-label">Emails Scanned</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-value">{adjustedResult.totalSizeMB}</span>
+                <span className="stat-label">Est. Size (MB)</span>
+              </div>
+              <div className="stat-card highlight">
+                <span className="stat-value">{adjustedResult.estimatedCO2grams}</span>
+                <span className="stat-label">CO₂ (grams)</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-value">{adjustedResult.withAttachments}</span>
+                <span className="stat-label">With Attachments</span>
+              </div>
             </div>
           </div>
 
-          {result.topSenders.length > 0 && (
-            <>
-              <h3 className="section-heading">Top Senders</h3>
-              <ul className="sender-list">
-                {result.topSenders.slice(0, 5).map((s, i) => (
-                  <li key={i} className="sender-item">
-                    <span className="sender-address">{s.address}</span>
-                    <span className="sender-count">{s.count}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </div>
+          <div className="glass-panel" style={{ marginTop: '16px' }}>
+            <div className="panel-header-flex">
+              <h2 className="panel-heading">Recommendations</h2>
+              {totalTasks > 0 && (
+                <span className="task-progress">
+                  {completedCount === totalTasks ? 'All Done!' : `${completedCount + 1} of ${totalTasks}`}
+                </span>
+              )}
+            </div>
+
+            {nextTask ? (
+              <div className="task-list">
+                <div key={nextTask.id} className="task-card current-task">
+                  <div className="task-header">
+                    <span className="task-badge">{nextTask.type}</span>
+                    <span className="task-impact">-{nextTask.impactCO2grams}g CO₂</span>
+                  </div>
+                  <h3 className="task-title">{nextTask.title}</h3>
+                  <p className="task-desc">{nextTask.description}</p>
+                  <button 
+                    className="task-btn" 
+                    onClick={() => handleRunTask(nextTask.id, nextTask.impactCO2grams)}
+                  >
+                    Run Optimization
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="all-clear">
+                <div className="success-icon">✓</div>
+                <p className="all-clear-text">You've completed all recommendations! Your mailbox is optimized.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="glass-panel" style={{ marginTop: '16px' }}>
+            <h3 className="section-heading">Top Senders</h3>
+            <ul className="sender-list">
+              {adjustedResult.topSenders.slice(0, 5).map((s, i) => (
+                <li key={i} className="sender-item">
+                  <span className="sender-address">{s.address}</span>
+                  <span className="sender-count">{s.count}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
     </div>
   )

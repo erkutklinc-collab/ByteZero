@@ -23,12 +23,6 @@
   <SupportUrl DefaultValue="https://www.contoso.com/help" />
   <AppDomains>
     <AppDomain>https://localhost:3000</AppDomain>
-    <AppDomain>https://login.microsoftonline.com</AppDomain>
-    <AppDomain>https://login.live.com</AppDomain>
-    <AppDomain>https://login.windows.net</AppDomain>
-    <AppDomain>https://account.live.com</AppDomain>
-    <AppDomain>https://signup.live.com</AppDomain>
-    <AppDomain>https://signup.microsoft.com</AppDomain>
   </AppDomains>
 
   <!-- Outlook specific host requirement -->
@@ -52,7 +46,7 @@
     </Form>
   </FormSettings>
 
-  <Permissions>ReadWriteMailbox</Permissions>
+  <Permissions>ReadItem</Permissions>
 
   <!-- Activation Rule is required for Mail Apps -->
   <Rule xsi:type="RuleCollection" Mode="Or">
