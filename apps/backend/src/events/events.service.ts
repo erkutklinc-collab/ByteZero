@@ -7,16 +7,16 @@ import { CreateEventDto } from './create-event.dto';
 // Simple CO2 estimates in grams per action
 const CO2_FACTORS: Record<string, (meta?: Record<string, any>) => number> = {
   email_deleted: (meta) => {
-    const sizeBytes = meta?.sizeBytes ?? 50_000; // default ~50KB
-    return (sizeBytes / 1_000_000) * 0.2; // ~0.2g per MB of storage freed
+    const sizeBytes = meta?.sizeBytes ?? 50_000;
+    return (sizeBytes / 1_000_000) * 0.5; // 0.5g per MB
   },
   attachment_removed: (meta) => {
     const sizeBytes = meta?.sizeBytes ?? 500_000;
-    return (sizeBytes / 1_000_000) * 0.5; // attachments cost more to store
+    return (sizeBytes / 1_000_000) * 1; // 1g per MB
   },
   cache_cleared: (meta) => {
     const sizeBytes = meta?.sizeBytes ?? 10_000_000;
-    return (sizeBytes / 1_000_000) * 0.1;
+    return (sizeBytes / 1_000_000) * 0.2; // 0.2g per MB
   },
   mailbox_scanned: () => 0, // awareness action, no direct savings
 };
