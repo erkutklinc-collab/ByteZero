@@ -27,3 +27,5 @@ validation_output*.txt
 
 # Turbo
 .turbo/
+apps/backend/db.sqlite
+apps/ngrok.exe
