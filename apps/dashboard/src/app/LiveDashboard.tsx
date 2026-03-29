@@ -135,7 +135,7 @@ export function LiveDashboard({ apiUrl, initialOverview, initialLeaderboard, ini
                     {event.user.name} {EVENT_LABELS[event.eventType] ?? event.eventType}
                   </h4>
                   <div className="flex gap-2 items-center mt-1">
-                    <span className="text-xs text-slate-500">{timeAgo(event.createdAt)}</span>
+                    <span className="text-xs text-slate-500" suppressHydrationWarning>{timeAgo(event.createdAt)}</span>
                     {event.co2Grams > 0 && (
                       <>
                         <span className="text-slate-700">&bull;</span>
