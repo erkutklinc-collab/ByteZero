@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { MetricsService } from './metrics.service';
 
 @Controller('api/metrics')
@@ -13,5 +13,20 @@ export class MetricsController {
   @Get('leaderboard')
   getLeaderboard() {
     return this.metricsService.getLeaderboard();
+  }
+
+  @Get('report')
+  getReport() {
+    return this.metricsService.getReport();
+  }
+
+  @Get('departments')
+  getDepartments() {
+    return this.metricsService.getDepartments();
+  }
+
+  @Get('departments/:id')
+  getDepartmentDetail(@Param('id') id: string) {
+    return this.metricsService.getDepartmentDetail(parseInt(id, 10));
   }
 }

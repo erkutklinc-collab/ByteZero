@@ -46,7 +46,7 @@ export default async function Home() {
   const [overview, leaderboard, recentEvents] = await Promise.all([
     fetch(`${API_URL}/api/metrics/overview`, { cache: "no-store" }).then(r => r.json()) as Promise<Overview>,
     fetch(`${API_URL}/api/metrics/leaderboard`, { cache: "no-store" }).then(r => r.json()) as Promise<LeaderboardEntry[]>,
-    fetch(`${API_URL}/api/events/recent?limit=15`, { cache: "no-store" }).then(r => r.json()) as Promise<RecentEvent[]>,
+    fetch(`${API_URL}/api/events/recent?limit=30`, { cache: "no-store" }).then(r => r.json()) as Promise<RecentEvent[]>,
   ]);
 
   return (
