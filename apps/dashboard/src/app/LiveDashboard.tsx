@@ -29,6 +29,7 @@ const EVENT_LABELS: Record<string, string> = {
   email_deleted: "deleted emails",
   attachment_removed: "removed attachments",
   cache_cleared: "cleared cache",
+  unsubscribe_action: "unsubscribed from mailing list",
   mailbox_scanned: "scanned mailbox",
 };
 

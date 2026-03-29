@@ -15,6 +15,7 @@ const EVENT_LABELS: Record<string, string> = {
   email_deleted: "Emails Deleted",
   attachment_removed: "Attachments Removed",
   cache_cleared: "Cache Cleared",
+  unsubscribe_action: "Unsubscribes",
   mailbox_scanned: "Mailbox Scans",
 };
 
@@ -22,6 +23,7 @@ const EVENT_ICONS: Record<string, typeof Trash2> = {
   email_deleted: Trash2,
   attachment_removed: Paperclip,
   cache_cleared: HardDrive,
+  unsubscribe_action: Zap,
   mailbox_scanned: Zap,
 };
 
@@ -29,6 +31,7 @@ const EVENT_COLORS: Record<string, string> = {
   email_deleted: "text-red-400",
   attachment_removed: "text-amber-400",
   cache_cleared: "text-blue-400",
+  unsubscribe_action: "text-purple-400",
   mailbox_scanned: "text-slate-400",
 };
 
