@@ -7,9 +7,6 @@ export class CreateEventDto {
   @IsString()
   eventType: string;
 
-  @IsNumber()
-  co2Grams: number;
-
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;

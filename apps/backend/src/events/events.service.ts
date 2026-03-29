@@ -30,7 +30,7 @@ export class EventsService {
 
   async create(dto: CreateEventDto): Promise<CarbonEvent> {
     const factor = CO2_FACTORS[dto.eventType] ?? (() => 0);
-    const co2Grams = dto.co2Grams !== undefined ? dto.co2Grams : factor(dto.metadata);
+    const co2Grams = factor(dto.metadata);
 
     const event = this.eventRepo.create({
       userId: dto.userId,
