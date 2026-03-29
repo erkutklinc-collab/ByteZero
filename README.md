@@ -32,6 +32,3 @@ ByteZero uses a premium "eco-tech" aesthetic:
 - **Frontend**: Next.js, React, Vite, Tailwind CSS (v4), Lucide React, Framer Motion.
 - **Backend**: NestJS, TypeORM, SQLite.
 - **Add-in**: Office.js API.
-
----
-*Built for the Advanced Agentic Coding project.*
