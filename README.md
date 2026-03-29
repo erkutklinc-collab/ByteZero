@@ -1,7 +1,8 @@
 # ByteZero: Enterprise Digital Carbon Footprint Management
 
 ByteZero is a full-stack platform designed to monitor and reduce the digital carbon footprint of enterprises. It integrates directly into employee workflows via Microsoft Outlook, providing real-time recommendations and a centralized organization dashboard for environmental impact tracking.
-
+## Temporary access
+- **Temporary ngrok link to Dashboard instance**: https://driving-toad-ethical.ngrok-free.app/
 ## 👥 Team
 
 - Виктория Чакърова
@@ -36,7 +37,6 @@ npx next dev --hostname 127.0.0.1
 ```
 
 ### Accessing the Components:
-- **Temporary ngrok link to Dashboard instance**: https://driving-toad-ethical.ngrok-free.app/
 - **Outlook Extension**: [https://localhost:3000](https://localhost:3000)
 - **Organization Dashboard**: [http://localhost:3002](http://localhost:3002)
 - **Backend API**: [http://localhost:3001/api/metrics/overview](http://localhost:3001/api/metrics/overview)
