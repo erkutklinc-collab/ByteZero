@@ -1,0 +1,8 @@
+{
+  "name": "bytefootprint",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx -y concurrently \"npm run start:dev --prefix apps/backend\" \"npm run dev --prefix apps/dashboard\" \"npm run dev --prefix apps/extension\""
+  }
+}

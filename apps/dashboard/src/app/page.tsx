@@ -61,17 +61,17 @@ export default async function Home() {
         <MetricCard
           title="Total CO2 Saved"
           value={`${overview.totalCo2Kg} kg`}
-          icon={<Target className="w-5 h-5 text-rose-400" />}
+          icon={<Target className="w-5 h-5 text-rose-300" />}
         />
         <MetricCard
           title="Trees Equivalent"
           value={`${overview.treesEquivalent}`}
-          icon={<Leaf className="w-5 h-5 text-emerald-400" />}
+          icon={<Leaf className="w-5 h-5 text-brand-300" />}
         />
         <MetricCard
           title="Active Employees"
           value={`${overview.activeEmployees}`}
-          icon={<Users className="w-5 h-5 text-blue-400" />}
+          icon={<Users className="w-5 h-5 text-blue-300" />}
         />
       </div>
 
@@ -81,7 +81,7 @@ export default async function Home() {
         <div className="lg:col-span-2 glass-panel p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-medium flex items-center gap-2 text-white">
-              <Trophy className="w-5 h-5 text-brand-400" />
+              <Trophy className="w-5 h-5 text-brand-500" />
               Department Leaderboard
             </h2>
           </div>
@@ -125,7 +125,7 @@ function MetricCard({ title, value, icon }: { title: string; value: string; icon
   return (
     <div className="glass-panel-interactive p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-400">{title}</p>
+        <p className="text-sm font-medium text-cream/60">{title}</p>
         <div className="p-2 bg-white/5 rounded-lg border border-white/5">{icon}</div>
       </div>
       <div>
@@ -148,7 +148,7 @@ function LeaderboardRow({ rank, name, points, members }: { rank: number; name: s
         </div>
       </div>
       <div className="text-right">
-        <span className="font-bold text-brand-300">{points.toLocaleString()}</span>
+        <span className="font-bold text-brand-400">{points.toLocaleString()}</span>
         <span className="text-xs text-brand-500/70 ml-1">pts</span>
       </div>
     </div>

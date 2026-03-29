@@ -30,11 +30,9 @@ export default function RootLayout({
       <body className="min-h-full min-w-full flex">
         {/* Sidebar */}
         <aside className="w-64 border-r border-border-subtle bg-black/40 backdrop-blur-sm hidden md:flex flex-col">
-          <div className="p-6 border-b border-border-subtle">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-brand-300 to-brand-500 bg-clip-text text-transparent">
-              ByteFootprint
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">Enterprise Dashboard</p>
+          <div className="p-6 border-b border-border-subtle flex flex-col items-center">
+            <img src="/logo.png" alt="ByteZero Logo" className="w-32 h-auto drop-shadow-[0_0_10px_rgba(229,255,125,0.4)]" />
+            <p className="text-[10px] uppercase tracking-[0.2em] text-brand-300/60 mt-4 font-bold">Enterprise Dashboard</p>
           </div>
           <nav className="flex-1 p-4 space-y-2">
             <a href="/" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Overview</a>
