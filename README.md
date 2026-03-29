@@ -2,6 +2,14 @@
 
 ByteZero is a full-stack platform designed to monitor and reduce the digital carbon footprint of enterprises. It integrates directly into employee workflows via Microsoft Outlook, providing real-time recommendations and a centralized organization dashboard for environmental impact tracking.
 
+## 👥 Team
+
+- Виктория Чакърова
+- Erkut Kılınç
+- Андреа Белорешка
+- Йоана Идакиева
+- Гаврил Гаврилов
+
 ## 🏗️ Project Architecture
 
 The repository is organized as a monorepo containing three core applications:
