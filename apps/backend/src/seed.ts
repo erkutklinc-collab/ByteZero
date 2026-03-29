@@ -8,7 +8,7 @@ const EVENT_TYPES = ['email_deleted', 'attachment_removed', 'cache_cleared', 'ma
 const DEPT_NAMES = ['Engineering', 'Marketing', 'HR', 'Sales', 'Finance', 'Operations', 'Legal'];
 
 const FIRST_NAMES = [
-  'Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack',
+  'Alex', 'Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Hank', 'Ivy', 'Jack',
   'Karen', 'Leo', 'Mia', 'Noah', 'Olivia', 'Paul', 'Quinn', 'Rachel', 'Sam', 'Tina',
   'Uma', 'Victor', 'Wendy', 'Xander', 'Yara', 'Zach', 'Amber', 'Brian', 'Chloe', 'Derek',
   'Elena', 'Felix', 'Gina', 'Hugo', 'Iris', 'James', 'Kira', 'Liam', 'Maya', 'Nate',

@@ -27,6 +27,9 @@ const playSuccessSound = () => {
   }
 }
 
+const API_URL = 'http://localhost:3001'
+const USER_ID = 1 // Alex Carter (added to seed)
+
 function App() {
   const [status, setStatus] = useState<string>('Not connected')
   const [scanning, setScanning] = useState(false)
@@ -58,12 +61,33 @@ function App() {
     }
   }
 
-  const handleRunTask = (taskId: string, impactCO2: number) => {
-    setCompletedTaskIds(prev => new Set(prev).add(taskId))
-    setStatus(`Task completed! Saved ${impactCO2}g of CO2 emissions.`)
+  const handleRunTask = async (task: any) => {
+    const { id, impactCO2grams, type } = task
+    setCompletedTaskIds(prev => new Set(prev).add(id))
+    setStatus(`Task completed! Saved ${impactCO2grams}g of CO2 emissions.`)
 
     // Play sound
     playSuccessSound()
+
+    // Map task type to backend event type
+    const eventType = type === 'DELETE' ? 'email_deleted' : 'unsubscribe_action'
+
+    // Report to backend
+    try {
+      await fetch(`${API_URL}/api/events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: USER_ID,
+          eventType,
+          co2Grams: impactCO2grams,
+          metadata: { taskId: id, title: task.title }
+        })
+      })
+      console.log(`Impact reported for ${id}`)
+    } catch (e) {
+      console.error('Failed to report impact to dashboard:', e)
+    }
 
     // Update XP and Level
     setXp(prevXp => {
@@ -207,7 +231,7 @@ function App() {
                   <p className="task-desc">{nextTask.description}</p>
                   <button
                     className="task-btn"
-                    onClick={() => handleRunTask(nextTask.id, nextTask.impactCO2grams)}
+                    onClick={() => handleRunTask(nextTask)}
                   >
                     Run Optimization
                   </button>
