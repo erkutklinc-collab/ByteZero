@@ -20,10 +20,16 @@ The repository is organized as a monorepo containing three core applications:
 
 ## 🚀 Quick Start
 
-You can start the entire platform (extension, backend, and dashboard) with a single command from the root directory:
+You can start the entire platform (extension, backend, and dashboard) with a three simple commands through the terminal:
 
-```bash
-npm run dev
+From apps/extension
+```$npm run dev 
+```
+From apps/backend
+```npm run start:dev
+```
+From apps/dashboard
+```npx next dev --hostname 127.0.0.1
 ```
 
 ### Accessing the Components:
