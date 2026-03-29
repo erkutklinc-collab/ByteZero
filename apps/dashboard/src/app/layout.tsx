@@ -37,10 +37,10 @@ export default function RootLayout({
             <p className="text-xs text-slate-400 mt-1">Enterprise Dashboard</p>
           </div>
           <nav className="flex-1 p-4 space-y-2">
-            <a href="#" className="block px-4 py-2 bg-brand-900/40 text-brand-100 rounded-md border border-brand-500/20 font-medium">Overview</a>
-            <a href="#" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Departments</a>
+            <a href="/" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Overview</a>
+            <a href="/departments" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Departments</a>
             <a href="#" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Users</a>
-            <a href="#" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Reports</a>
+            <a href="/reports" className="block px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-md transition-colors">Reports</a>
           </nav>
         </aside>
         

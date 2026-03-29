@@ -32,7 +32,7 @@ function App() {
   const [scanning, setScanning] = useState(false)
   const [result, setResult] = useState<MailboxScanResult | null>(null)
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set())
-  
+
   // Gamification state
   const [xp, setXp] = useState(30)
   const [level, setLevel] = useState(1)
@@ -61,7 +61,7 @@ function App() {
   const handleRunTask = (taskId: string, impactCO2: number) => {
     setCompletedTaskIds(prev => new Set(prev).add(taskId))
     setStatus(`Task completed! Saved ${impactCO2}g of CO2 emissions.`)
-    
+
     // Play sound
     playSuccessSound()
 
@@ -76,7 +76,7 @@ function App() {
       }
       return newXp
     })
-    
+
     // Auto-clear status after 3 seconds
     setTimeout(() => {
       setStatus(prev => prev.includes('Saved') ? 'Ready for more optimizations.' : prev)
@@ -91,10 +91,10 @@ function App() {
   // Calculate adjusted results based on completed tasks
   const getAdjustedResults = () => {
     if (!result) return null
-    
+
     let totalEmails = result.totalEmails
     let totalCO2 = result.estimatedCO2grams
-    
+
     result.tasks.forEach(task => {
       if (completedTaskIds.has(task.id)) {
         totalCO2 -= task.impactCO2grams
@@ -106,7 +106,7 @@ function App() {
         }
       }
     })
-    
+
     return {
       ...result,
       totalEmails: Math.max(0, totalEmails),
@@ -149,7 +149,7 @@ function App() {
         <p className="panel-description">
           Analyze your mailbox to securely calculate its digital carbon footprint and environmental impact.
         </p>
-        
+
         <button
           className="primary-btn"
           onClick={handleScan}
@@ -205,8 +205,8 @@ function App() {
                   </div>
                   <h3 className="task-title">{nextTask.title}</h3>
                   <p className="task-desc">{nextTask.description}</p>
-                  <button 
-                    className="task-btn" 
+                  <button
+                    className="task-btn"
                     onClick={() => handleRunTask(nextTask.id, nextTask.impactCO2grams)}
                   >
                     Run Optimization
