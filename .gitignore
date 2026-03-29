@@ -10,7 +10,6 @@ out/
 .env
 .env.local
 .env.*.local
-*.sqlite
 
 # IDE
 .vscode/

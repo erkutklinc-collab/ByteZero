@@ -9,7 +9,7 @@ import { AdminModule } from './admin/admin.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'better-sqlite3',
-      database: process.env.DB_PATH || 'db.sqlite',
+      database: 'db.sqlite',
       entities: [Department, User, CarbonEvent],
       synchronize: true, // auto-create tables in dev
     }),
